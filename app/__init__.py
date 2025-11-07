@@ -20,13 +20,19 @@ def create_app():
 
     db.init_app(app)
 
-    # Crear tablas si no existen (solo para ejemplo/dev)
+    from . import models
     with app.app_context():
-        from . import models  # importa modelos para que SQLAlchemy los registre
         db.create_all()
 
-    # Registrar rutas
-    from .routes import bp
-    app.register_blueprint(bp)
+    # Registrar rutas correctamente
+    from .routes.users import users_bp
+    from .routes.products import products_bp
+    app.register_blueprint(users_bp, url_prefix="/users")
+    app.register_blueprint(products_bp, url_prefix="/products")
+
+    # Endpoint de prueba
+    @app.route("/")
+    def index():
+        return {"message": "API funcionando correctamente"}
 
     return app

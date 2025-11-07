@@ -1,14 +1,17 @@
-# en app/routes/users.py
-from flask import Blueprint, jsonify
-from app import mysql
+from flask import Blueprint, jsonify, request
+from ..models import db, User
 
-users_bp = Blueprint('users', __name__)
+users_bp = Blueprint("users", __name__)
 
-@users_bp.route('/users')
+@users_bp.route("/", methods=["GET"])
 def get_users():
-    conn = mysql.connection
-    cursor = conn.cursor()
-    cursor.execute("SELECT 'Conexión MySQL exitosa!'")
-    result = cursor.fetchone()
-    cursor.close()
-    return jsonify({"message": result[0]})
+    users = User.query.all()
+    return jsonify([u.to_dict() for u in users])
+
+@users_bp.route("/", methods=["POST"])
+def create_user():
+    data = request.get_json()
+    new_user = User(name=data["name"], email=data["email"])
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify(new_user.to_dict()), 201
